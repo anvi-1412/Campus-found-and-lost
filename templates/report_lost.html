@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Report a Lost Item{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding-top: 3rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('user.dashboard') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: var(--slate-600); margin-bottom: 0.75rem;">
+      <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h1 style="font-size: 2rem; margin-bottom: 0.2rem;">Report a Lost Item</h1>
+        <p style="color: var(--slate-600); font-size: 0.95rem;">Provide detailed information so fellow campus members and security staff can identify your missing belonging.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('items.report_lost') }}" enctype="multipart/form-data">
+      <!-- Item Name -->
+      <div class="form-group">
+        <label for="title" class="form-label">
+          Item Name / Title <span class="required">*</span>
+        </label>
+        <input type="text" id="title" name="title" class="form-control" 
+               value="{{ form_data.title or '' }}" 
+               placeholder="e.g. Space Grey Apple MacBook Pro 14-inch, Black Leather Fossil Wallet" required autofocus>
+        <div class="form-hint">Be clear and specific with brand, model, and primary color.</div>
+      </div>
+
+      <!-- Category & Date Lost -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category" class="form-label">
+            Item Category <span class="required">*</span>
+          </label>
+          <select id="category" name="category" class="form-control" required>
+            <option value="" disabled {% if not form_data.category %}selected{% endif %}>Select category...</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if form_data.category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="event_date" class="form-label">
+            Date Lost <span class="required">*</span>
+          </label>
+          <input type="date" id="event_date" name="event_date" class="form-control" 
+                 max="{{ today }}" value="{{ form_data.event_date or today }}" required>
+        </div>
+      </div>
+
+      <!-- Last Seen Location -->
+      <div class="form-group">
+        <label for="location" class="form-label">
+          Last Seen Location on Campus <span class="required">*</span>
+        </label>
+        <select id="location" name="location" class="form-control" required>
+          <option value="" disabled {% if not form_data.location %}selected{% endif %}>Select campus location...</option>
+          {% for loc in locations %}
+            <option value="{{ loc }}" {% if form_data.location == loc %}selected{% endif %}>{{ loc }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-hint">Choose the building or zone where you recall having the item last.</div>
+      </div>
+
+      <!-- Detailed Description -->
+      <div class="form-group">
+        <label for="description" class="form-label">
+          Detailed Description & Identifying Features <span class="required">*</span>
+        </label>
+        <textarea id="description" name="description" class="form-control" rows="4" 
+                  placeholder="Describe unique marks, scratches, stickers, screen lock wallpaper, serial number fragments, or specific contents that only the real owner would know..." required minlength="10">{{ form_data.description or '' }}</textarea>
+        <div class="form-hint">At least 10 characters. Detailed descriptions dramatically improve recovery speed!</div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="form-group">
+        <label for="contact_info" class="form-label">
+          Preferred Contact Information
+        </label>
+        <input type="text" id="contact_info" name="contact_info" class="form-control" 
+               value="{{ form_data.contact_info or session.get('user_email') }}" 
+               placeholder="e.g. Phone number or alternate email">
+        <div class="form-hint">How the finder or campus security can reach you directly upon recovery.</div>
+      </div>
+
+      <!-- Item Photo Upload (Drag & Drop Zone with Live Preview) -->
+      <div class="form-group">
+        <label class="form-label">Item Photo (Optional but highly recommended)</label>
+        <div class="file-upload-zone">
+          <input type="file" name="image" accept="image/png, image/jpeg, image/webp, image/gif" class="file-upload-input">
+          <div class="file-upload-icon">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <div style="font-weight: 600; color: var(--slate-800); margin-bottom: 0.25rem;">
+            Click to upload or drag and drop a photo
+          </div>
+          <div style="font-size: 0.8rem; color: var(--slate-500);">
+            Supports PNG, JPG, JPEG, WEBP (Max 8MB)
+          </div>
+        </div>
+
+        <div class="file-preview-container">
+          <img src="" alt="Selected Image Preview" class="file-preview-img">
+          <button type="button" class="file-preview-remove" title="Remove image">&times;</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center; margin-top: 2rem;">
+        <button type="submit" class="btn btn-danger btn-lg" style="flex: 1;">
+          <i class="fa-solid fa-bullhorn"></i> Submit Lost Report
+        </button>
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-lg">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

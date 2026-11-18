@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="form-card" style="max-width: 640px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 2.25rem;">
+      <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-xl); font-size: 1.85rem; margin-bottom: 1rem;">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+      <h2 style="font-size: 2rem; margin-bottom: 0.35rem;">Create Student Account</h2>
+      <p style="color: var(--slate-600); font-size: 0.95rem;">Register to report lost belongings, log found items, and file claims</p>
+    </div>
+
+    <form id="register-form" method="POST" action="{{ url_for('auth.register') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name" class="form-label">
+            Full Name <span class="required">*</span>
+          </label>
+          <input type="text" id="name" name="name" class="form-control" 
+                 value="{{ form_data.name or '' }}" 
+                 placeholder="e.g. Jordan Hayes" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="student_id" class="form-label">
+            Student ID Number <span class="required">*</span>
+          </label>
+          <input type="text" id="student_id" name="student_id" class="form-control" 
+                 value="{{ form_data.student_id or '' }}" 
+                 placeholder="e.g. CS-2024-089" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email" class="form-label">
+            College / Institutional Email <span class="required">*</span>
+          </label>
+          <input type="email" id="email" name="email" class="form-control" 
+                 value="{{ form_data.email or '' }}" 
+                 placeholder="e.g. j.hayes@campus.edu" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone" class="form-label">
+            Contact Phone Number
+          </label>
+          <input type="tel" id="phone" name="phone" class="form-control" 
+                 value="{{ form_data.phone or '' }}" 
+                 placeholder="e.g. (555) 123-4567">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="department" class="form-label">
+          Academic Department / Faculty <span class="required">*</span>
+        </label>
+        <select id="department" name="department" class="form-control" required>
+          <option value="" disabled {% if not form_data.department %}selected{% endif %}>Select your department...</option>
+          {% for dept in departments %}
+            <option value="{{ dept }}" {% if form_data.department == dept %}selected{% endif %}>
+              {{ dept }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password" class="form-label">
+            Password <span class="required">*</span>
+          </label>
+          <input type="password" id="password" name="password" class="form-control" 
+                 placeholder="Min. 6 characters" required minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label for="confirm_password" class="form-label">
+            Confirm Password <span class="required">*</span>
+          </label>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-control" 
+                 placeholder="Re-enter password" required minlength="6">
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #64748b; display: flex; align-items: flex-start; gap: 0.6rem;">
+        <i class="fa-solid fa-circle-info" style="color: #4f46e5; margin-top: 0.15rem;"></i>
+        <span>By registering, you agree that your campus contact details may be used by the Campus Safety Desk to coordinate the secure return of your belongings.</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+        <i class="fa-solid fa-user-plus"></i> Complete Registration
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--slate-200); font-size: 0.92rem; color: var(--slate-600);">
+      Already have an account? 
+      <a href="{{ url_for('auth.login') }}" style="font-weight: 700; color: var(--primary);">
+        Sign in here
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

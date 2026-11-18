@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Control Center{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<div style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: var(--white); padding: 3rem 0; margin-bottom: 2.5rem; border-bottom: 1px solid #334155;">
+  <div class="container">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(124, 58, 237, 0.25); color: #c084fc; padding: 0.3rem 0.85rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; margin-bottom: 0.75rem;">
+          <i class="fa-solid fa-shield-halved"></i> Campus Safety & Security Staff Portal
+        </div>
+        <h1 style="color: var(--white); font-size: 2.25rem; margin-bottom: 0.35rem;">Administrator Control Center</h1>
+        <p style="color: #94a3b8; font-size: 0.95rem;">Manage campus lost and found reports, verify student claims, oversee custody, and audit users.</p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('items.browse') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-compass"></i> Public Directory
+        </a>
+        <a href="{{ url_for('items.report_found') }}" class="btn btn-teal btn-sm">
+          <i class="fa-solid fa-plus"></i> Log Custody Item
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container container-wide">
+  <!-- System Metrics Strip -->
+  <div class="stats-grid" style="margin-bottom: 2.5rem;">
+    <div class="stat-card">
+      <div class="stat-icon warning">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div class="stat-value" style="color: var(--warning);">{{ stats.pending_claims }}</div>
+      <div class="stat-label">Pending Claim Verifications</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon primary">
+        <i class="fa-solid fa-boxes-stacked"></i>
+      </div>
+      <div class="stat-value">{{ stats.total_items }}</div>
+      <div class="stat-label">Total Reported Items ({{ stats.total_lost }} Lost / {{ stats.total_found }} Found)</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <i class="fa-solid fa-handshake"></i>
+      </div>
+      <div class="stat-value" style="color: var(--success);">{{ stats.total_returned }}</div>
+      <div class="stat-label">Successfully Returned ({{ stats.recovery_rate }}%)</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon teal">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="stat-value">{{ stats.total_users }}</div>
+      <div class="stat-label">Registered Students</div>
+    </div>
+  </div>
+
+  <!-- Admin Navigation Tabs -->
+  <div class="tabs-container">
+    <div class="nav-tabs">
+      <button class="tab-btn {% if active_tab == 'overview' or active_tab == 'claims' %}active{% endif %}" data-tab="tab-claims">
+        <i class="fa-solid fa-file-shield"></i>
+        Claims Verification Queue
+        {% if stats.pending_claims > 0 %}
+          <span class="badge-counter" style="background: var(--warning); color: #0f172a;">{{ stats.pending_claims }}</span>
+        {% endif %}
+      </button>
+
+      <button class="tab-btn {% if active_tab == 'items' %}active{% endif %}" data-tab="tab-items">
+        <i class="fa-solid fa-boxes-packing"></i>
+        Item Reports Management ({{ items|length }})
+      </button>
+
+      <button class="tab-btn {% if active_tab == 'users' %}active{% endif %}" data-tab="tab-users">
+        <i class="fa-solid fa-users-gear"></i>
+        Registered Students ({{ users|length }})
+      </button>
+
+      <button class="tab-btn {% if active_tab == 'audit' %}active{% endif %}" data-tab="tab-audit">
+        <i class="fa-solid fa-clipboard-check"></i>
+        Audit & Activity Log
+      </button>
+    </div>
+
+    <!-- Tab 1: Claims Verification Queue -->
+    <div id="tab-claims" class="tab-pane {% if active_tab == 'overview' or active_tab == 'claims' %}active{% endif %}">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.25rem; color: var(--slate-900);">Student Ownership Claims</h3>
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="{{ url_for('admin.dashboard', tab='claims', claims_status='All') }}" class="btn btn-sm {% if claims_filter == 'All' %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+          <a href="{{ url_for('admin.dashboard', tab='claims', claims_status='Pending') }}" class="btn btn-sm {% if claims_filter == 'Pending' %}btn-warning{% else %}btn-secondary{% endif %}">Pending</a>
+          <a href="{{ url_for('admin.dashboard', tab='claims', claims_status='Approved') }}" class="btn btn-sm {% if claims_filter == 'Approved' %}btn-success{% else %}btn-secondary{% endif %}">Approved</a>
+          <a href="{{ url_for('admin.dashboard', tab='claims', claims_status='Rejected') }}" class="btn btn-sm {% if claims_filter == 'Rejected' %}btn-danger{% else %}btn-secondary{% endif %}">Rejected</a>
+        </div>
+      </div>
+
+      {% if claims %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Claim ID</th>
+                <th>Item Details</th>
+                <th>Claimer Info</th>
+                <th>Phone</th>
+                <th>Submitted Ownership Proof</th>
+                <th>Claim Status</th>
+                <th style="min-width: 220px;">Review Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for claim in claims %}
+                <tr>
+                  <td><strong>#CLM-{{ claim.id }}</strong></td>
+                  <td>
+                    <a href="{{ url_for('items.details', item_id=claim.item_id) }}" style="font-weight: 700; color: var(--primary);">
+                      {{ claim.item_title }}
+                    </a>
+                    <div style="font-size: 0.78rem; color: var(--slate-500);"><i class="fa-solid fa-location-dot"></i> {{ claim.item_location }}</div>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600; color: var(--slate-900);">{{ claim.claimer_name }}</div>
+                    <div style="font-size: 0.78rem; color: var(--slate-500);">{{ claim.claimer_student_id }} &bull; {{ claim.claimer_dept }}</div>
+                  </td>
+                  <td>{{ claim.contact_phone or 'N/A' }}</td>
+                  <td style="max-width: 280px;">
+                    <div style="font-size: 0.85rem; color: var(--slate-700); line-height: 1.4;">
+                      {{ claim.proof_description }}
+                    </div>
+                    {% if claim.admin_remarks %}
+                      <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.35rem; font-style: italic;">
+                        <strong>Staff Remark:</strong> {{ claim.admin_remarks }}
+                      </div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if claim.status == 'Pending' %}
+                      <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Pending</span>
+                    {% elif claim.status == 'Approved' %}
+                      <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                    {% else %}
+                      <span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if claim.status == 'Pending' %}
+                      <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                        <form action="{{ url_for('admin.claim_action', claim_id=claim.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
+                          <input type="hidden" name="action" value="approve">
+                          <input type="text" name="admin_remarks" placeholder="Optional remark (e.g. Verified with ID)" class="form-control" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;">
+                          <button type="submit" class="btn btn-success btn-sm" title="Approve claim and mark item as Returned">
+                            <i class="fa-solid fa-check"></i> Approve
+                          </button>
+                        </form>
+
+                        <form action="{{ url_for('admin.claim_action', claim_id=claim.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
+                          <input type="hidden" name="action" value="reject">
+                          <input type="text" name="admin_remarks" placeholder="Reason for rejection..." class="form-control" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;" required>
+                          <button type="submit" class="btn btn-danger btn-sm" title="Reject claim">
+                            <i class="fa-solid fa-xmark"></i> Reject
+                          </button>
+                        </form>
+                      </div>
+                    {% else %}
+                      <span style="font-size: 0.85rem; color: var(--slate-500); font-weight: 500;">
+                        Claim resolved on {{ claim.updated_at|format_date }}
+                      </span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="background: var(--white); border-radius: var(--radius-xl); border: 1px dashed var(--slate-300); padding: 3.5rem; text-align: center; color: var(--slate-500);">
+          <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: #10b981; margin-bottom: 0.75rem;"></i>
+          <h3>No Claims Matching Selected Filter</h3>
+          <p>All student ownership claims are up to date.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Tab 2: Item Reports Management -->
+    <div id="tab-items" class="tab-pane {% if active_tab == 'items' %}active{% endif %}">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Item Title</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th>Reported By</th>
+              <th>Status</th>
+              <th>Update Status</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td>#{{ item.id }}</td>
+                <td>
+                  <a href="{{ url_for('items.details', item_id=item.id) }}" style="font-weight: 700; color: var(--slate-900);">
+                    {{ item.title }}
+                  </a>
+                  <div style="font-size: 0.78rem; color: var(--slate-500);">{{ item.event_date|format_date }}</div>
+                </td>
+                <td>
+                  {% if item.item_type == 'lost' %}
+                    <span class="badge badge-lost">Lost</span>
+                  {% else %}
+                    <span class="badge badge-found">Found</span>
+                  {% endif %}
+                </td>
+                <td>{{ item.category }}</td>
+                <td>{{ item.location }}</td>
+                <td>
+                  <div style="font-weight: 600;">{{ item.reporter_name }}</div>
+                  <div style="font-size: 0.75rem; color: var(--slate-500);">{{ item.reporter_dept }}</div>
+                </td>
+                <td><span class="badge {{ item.status|status_badge }}">{{ item.status }}</span></td>
+                <td>
+                  <form action="{{ url_for('admin.item_status', item_id=item.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
+                    <select name="status" class="form-control" style="font-size: 0.8rem; padding: 0.35rem 0.5rem; width: 140px;" onchange="this.form.submit()">
+                      {% for st in statuses %}
+                        <option value="{{ st }}" {% if item.status == st %}selected{% endif %}>{{ st }}</option>
+                      {% endfor %}
+                    </select>
+                  </form>
+                </td>
+                <td>
+                  <form action="{{ url_for('admin.item_delete', item_id=item.id) }}" method="POST" onsubmit="return confirm('Permanently delete item #{{ item.id }}?');">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Registered Students Management -->
+    <div id="tab-users" class="tab-pane {% if active_tab == 'users' %}active{% endif %}">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Student Name</th>
+              <th>Student ID Number</th>
+              <th>Email Address</th>
+              <th>Department</th>
+              <th>Current Role</th>
+              <th>Role Control</th>
+              <th>Registered</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td>#{{ u.id }}</td>
+                <td>
+                  <div style="font-weight: 700; color: var(--slate-900);">{{ u.name }}</div>
+                  <div style="font-size: 0.78rem; color: var(--slate-500);">{{ u.phone or 'No phone' }}</div>
+                </td>
+                <td><strong>{{ u.student_id }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.department }}</td>
+                <td>
+                  {% if u.role == 'admin' %}
+                    <span class="badge" style="background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8;">Admin</span>
+                  {% else %}
+                    <span class="badge badge-success">Student</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if u.id != session.get('user_id') %}
+                    <form action="{{ url_for('admin.user_role', user_id=u.id) }}" method="POST" style="display: inline;">
+                      {% if u.role == 'student' %}
+                        <input type="hidden" name="role" value="admin">
+                        <button type="submit" class="btn btn-secondary btn-sm" title="Promote to admin">Make Admin</button>
+                      {% else %}
+                        <input type="hidden" name="role" value="student">
+                        <button type="submit" class="btn btn-secondary btn-sm" title="Demote to student">Make Student</button>
+                      {% endif %}
+                    </form>
+                  {% else %}
+                    <span style="font-size: 0.78rem; color: var(--slate-400);">(You)</span>
+                  {% endif %}
+                </td>
+                <td>{{ u.created_at|format_date }}</td>
+                <td>
+                  {% if u.id != session.get('user_id') %}
+                    <form action="{{ url_for('admin.user_delete', user_id=u.id) }}" method="POST" onsubmit="return confirm('Permanently remove student account for {{ u.name }}?');">
+                      <button type="submit" class="btn btn-danger btn-sm" title="Remove user">
+                        <i class="fa-solid fa-user-xmark"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 4: Audit & Activity Log -->
+    <div id="tab-audit" class="tab-pane {% if active_tab == 'audit' %}active{% endif %}">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action Code</th>
+              <th>User</th>
+              <th>Audit Log Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+              <tr>
+                <td style="white-space: nowrap; font-size: 0.8rem; color: var(--slate-500);">
+                  {{ log.created_at }}
+                </td>
+                <td>
+                  <span class="badge badge-secondary" style="font-family: var(--font-mono); font-size: 0.75rem;">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td>
+                  {% if log.user_name %}
+                    <strong>{{ log.user_name }}</strong> ({{ log.user_role }})
+                  {% else %}
+                    <span style="color: var(--slate-400);">System / Guest</span>
+                  {% endif %}
+                </td>
+                <td style="color: var(--slate-700); font-size: 0.88rem;">{{ log.details }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

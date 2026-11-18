@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <linearGradient id="shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#4338CA" />
+    </linearGradient>
+  </defs>
+  <!-- Shield Background -->
+  <path d="M24 4L8 10V22C8 32.5 14.8 42.1 24 44C33.2 42.1 40 32.5 40 22V10L24 4Z" fill="url(#shield-grad)"/>
+  <!-- Inner search compass ring -->
+  <circle cx="23" cy="21" r="8.5" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Pinpoint / magnifying handle -->
+  <path d="M29 27L35 33" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+  <!-- Sparkle dot -->
+  <circle cx="23" cy="21" r="2.5" fill="#38BDF8"/>
+</svg>

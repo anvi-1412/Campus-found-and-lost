@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Instance folder (contains local database)
+# You can uncomment this if you don't want to track the local DB
+# instance/
+
+# OS generated files
+.DS_Store
+Thumbs.db

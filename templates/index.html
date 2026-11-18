@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Centralized Campus Lost & Found System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-tag">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Official University Service</span>
+        </div>
+        <h1 class="hero-title">
+          Lost something on campus? <br>
+          <span class="text-gradient">Let's get it back to you.</span>
+        </h1>
+        <p class="hero-description">
+          The central hub for college students and faculty to report lost belongings, log found items, track verified claims, and reunite with valuables across all campus buildings.
+        </p>
+
+        <!-- Primary Action Buttons -->
+        <div class="hero-actions">
+          <a href="{{ url_for('items.report_lost') }}" class="btn btn-danger btn-lg">
+            <i class="fa-solid fa-bullhorn"></i> Report Lost Item
+          </a>
+          <a href="{{ url_for('items.report_found') }}" class="btn btn-teal btn-lg">
+            <i class="fa-solid fa-hand-holding-heart"></i> Report Found Item
+          </a>
+          <a href="{{ url_for('items.browse') }}" class="btn btn-secondary btn-lg">
+            <i class="fa-solid fa-magnifying-glass"></i> Browse Items
+          </a>
+        </div>
+
+        <!-- Live Search Bar -->
+        <form action="{{ url_for('items.browse') }}" method="GET" class="hero-search-box">
+          <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8; font-size: 1.1rem; margin-left: 0.5rem;"></i>
+          <input type="text" name="search" class="hero-search-input" placeholder="Search laptops, student IDs, keys, water bottles...">
+          <button type="submit" class="btn btn-primary btn-sm">
+            Search Campus
+          </button>
+        </form>
+      </div>
+
+      <!-- Hero Visual Card -->
+      <div class="hero-visual">
+        <div class="hero-stat-pill pill-1">
+          <div class="stat-icon success" style="width: 36px; height: 36px; font-size: 1.1rem; margin-bottom: 0;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;">{{ stats.total_returned }} Items</div>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Reunited with Owners</div>
+          </div>
+        </div>
+
+        <div class="hero-visual-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+            <div style="font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-shield-halved" style="color: #4f46e5;"></i>
+              Campus Live Stream
+            </div>
+            <span class="badge badge-success">Active Network</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+              <div style="width: 42px; height: 42px; border-radius: 8px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                <i class="fa-solid fa-laptop"></i>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">MacBook Air M2</div>
+                <div style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-location-dot"></i> Main Library &bull; 2nd Floor</div>
+              </div>
+              <span class="badge badge-lost">Lost</span>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+              <div style="width: 42px; height: 42px; border-radius: 8px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                <i class="fa-solid fa-headphones"></i>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">Sony XM5 Headphones</div>
+                <div style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-location-dot"></i> Science Block B &bull; Rm 102</div>
+              </div>
+              <span class="badge badge-found">Found</span>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+              <div style="width: 42px; height: 42px; border-radius: 8px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">Subaru Car Key & Lanyard</div>
+                <div style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-location-dot"></i> Parking Lot C-12</div>
+              </div>
+              <span class="badge badge-warning">Claiming</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-stat-pill pill-2">
+          <div class="stat-icon primary" style="width: 36px; height: 36px; font-size: 1.1rem; margin-bottom: 0;">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;">{{ stats.recovery_rate }}% Success</div>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Recovery Rate This Term</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Live Statistics Section -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon primary">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_items }}</div>
+        <div class="stat-label">Total Items Cataloged</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon warning">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_lost }}</div>
+        <div class="stat-label">Reported Lost</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon teal">
+          <i class="fa-solid fa-hand-holding-heart"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_found }}</div>
+        <div class="stat-label">Reported Found</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon success">
+          <i class="fa-solid fa-check-double"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_returned }}</div>
+        <div class="stat-label">Reunited with Owners</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Simple & Seamless</span>
+      <h2 class="section-title">How Campus Lost & Found Works</h2>
+      <p class="section-desc">Designed specifically for the fast-paced college environment to ensure no item remains misplaced for long.</p>
+    </div>
+
+    <div class="steps-grid">
+      <!-- Step 1 -->
+      <div class="step-card">
+        <span class="step-number">01</span>
+        <div class="step-icon-wrap">
+          <i class="fa-solid fa-clipboard-list"></i>
+        </div>
+        <h3 class="step-title">Report or Search</h3>
+        <p class="step-text">
+          Submit a lost report with photos, location, and date, or report an item you discovered on campus so the owner can spot it immediately.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card">
+        <span class="step-number">02</span>
+        <div class="step-icon-wrap" style="background: #f0fdfa; color: #0d9488;">
+          <i class="fa-solid fa-fingerprint"></i>
+        </div>
+        <h3 class="step-title">Claim & Verify Ownership</h3>
+        <p class="step-text">
+          Found something that belongs to you? Submit a claim with unique proof of ownership such as serial numbers, screen wallpapers, or receipts.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card">
+        <span class="step-number">03</span>
+        <div class="step-icon-wrap" style="background: #ecfdf5; color: #10b981;">
+          <i class="fa-solid fa-handshake-simple"></i>
+        </div>
+        <h3 class="step-title">Admin Review & Return</h3>
+        <p class="step-text">
+          Campus security or the finder verifies ownership and approves the handover. Collect your item securely at the Campus Security Station.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recently Reported Items Section -->
+<section style="padding: 4.5rem 0; background: #ffffff;">
+  <div class="container">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span class="section-tag">Latest Feed</span>
+        <h2 class="section-title" style="margin-bottom: 0.25rem;">Recently Reported Campus Items</h2>
+        <p class="section-desc" style="margin-bottom: 0;">Check out the latest reports from students across all departments.</p>
+      </div>
+      <a href="{{ url_for('items.browse') }}" class="btn btn-outline-primary">
+        View All Items <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="items-grid">
+      {% for item in recent_items %}
+        <div class="item-card">
+          <div class="item-card-image-wrap">
+            {% if item.image_path %}
+              <img src="{{ url_for('uploaded_file', filename=item.image_path) }}" alt="{{ item.title }}" class="item-card-image" loading="lazy">
+            {% else %}
+              <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ item.title }}" class="item-card-image">
+            {% endif %}
+
+            <div class="item-card-badges">
+              {% if item.item_type == 'lost' %}
+                <span class="badge badge-lost"><i class="fa-solid fa-circle-exclamation"></i> Lost</span>
+              {% else %}
+                <span class="badge badge-found"><i class="fa-solid fa-hand-holding-heart"></i> Found</span>
+              {% endif %}
+
+              <span class="badge {{ item.status|status_badge }}">{{ item.status }}</span>
+            </div>
+          </div>
+
+          <div class="item-card-body">
+            <div class="item-card-category">{{ item.category }}</div>
+            <h3 class="item-card-title">{{ item.title }}</h3>
+            <p class="item-card-desc">{{ item.description }}</p>
+
+            <div class="item-card-meta">
+              <div class="meta-row">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>{{ item.location }}</span>
+              </div>
+              <div class="meta-row">
+                <i class="fa-regular fa-calendar"></i>
+                <span>{{ item.event_date|format_date }}</span>
+              </div>
+            </div>
+
+            <div class="item-card-footer">
+              <a href="{{ url_for('items.details', item_id=item.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">
+                <i class="fa-solid fa-eye"></i> View Details
+              </a>
+              {% if item.item_type == 'found' and item.status == 'Found' and session.get('user_id') != item.user_id %}
+                <a href="{{ url_for('claims.submit_claim', item_id=item.id) }}" class="btn btn-primary btn-sm">
+                  Claim
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Why UniFind</span>
+      <h2 class="section-title">Built with Campus Security in Mind</h2>
+      <p class="section-desc">Reliable, modern, and verified features designed to safeguard students' personal belongings.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-id-card"></i></div>
+        <div>
+          <h3 class="feature-title">Student ID Verification</h3>
+          <p class="feature-desc">All reports and claims require authenticated student accounts with verified department affiliation.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div>
+          <h3 class="feature-title">Fraud Prevention</h3>
+          <p class="feature-desc">Students cannot claim items they reported. Ownership claims undergo strict verification with proof questions.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-camera"></i></div>
+        <div>
+          <h3 class="feature-title">Photo Documentation</h3>
+          <p class="feature-desc">Upload clear images of lost and found belongings as well as proof receipts to eliminate confusion.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-filter"></i></div>
+        <div>
+          <h3 class="feature-title">Granular Filtering</h3>
+          <p class="feature-desc">Quickly isolate items by building location, category, date range, or current claim status.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <div>
+          <h3 class="feature-title">Admin Moderation</h3>
+          <p class="feature-desc">Dedicated Campus Safety portal to manage reports, approve claims, and oversee safe custody.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+        <div>
+          <h3 class="feature-title">100% Mobile Ready</h3>
+          <p class="feature-desc">Report or check missing belongings directly from your phone while walking between campus lecture halls.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call To Action Banner -->
+<section style="padding: 4.5rem 0; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff;">
+  <div class="container text-center" style="text-align: center; max-width: 720px;">
+    <h2 style="color: #ffffff; font-size: 2.5rem; margin-bottom: 1rem;">Ready to find your missing items?</h2>
+    <p style="color: #cbd5e1; font-size: 1.15rem; margin-bottom: 2rem;">
+      Join hundreds of students and faculty using UniFind. Report, search, and recover your lost gear in minutes.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-user-plus"></i> Create Student Account
+      </a>
+      <a href="{{ url_for('items.browse') }}" class="btn btn-secondary btn-lg">
+        <i class="fa-solid fa-compass"></i> Explore All Items
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - Item Details{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <!-- Breadcrumb & Back Link -->
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('items.browse') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: var(--slate-600);">
+      <i class="fa-solid fa-arrow-left"></i> Back to Browse Listings
+    </a>
+  </div>
+
+  <div class="item-details-layout">
+    <!-- Left Column: Item Image & Gallery -->
+    <div>
+      <div class="item-gallery-card">
+        {% if item.image_path %}
+          <img src="{{ url_for('uploaded_file', filename=item.image_path) }}" alt="{{ item.title }}" class="item-large-image">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ item.title }}" class="item-large-image">
+        {% endif %}
+      </div>
+
+      <!-- Reporter / Ownership Box -->
+      <div style="background: var(--white); border-radius: var(--radius-xl); border: 1px solid var(--slate-200); padding: 1.75rem; margin-top: 1.5rem; box-shadow: var(--shadow-sm);">
+        <h4 style="font-size: 1.05rem; margin-bottom: 1rem; color: var(--slate-900); display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-user-check" style="color: var(--primary);"></i> Reporter Information
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--slate-500);">Reported By:</span>
+            <span style="font-weight: 600; color: var(--slate-800);">{{ item.reporter_name }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--slate-500);">Student ID / Role:</span>
+            <span style="font-weight: 600; color: var(--slate-800);">{{ item.reporter_student_id }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--slate-500);">Department:</span>
+            <span style="font-weight: 600; color: var(--slate-800);">{{ item.reporter_dept }}</span>
+          </div>
+          {% if item.contact_info %}
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--slate-100); padding-top: 0.65rem;">
+              <span style="color: var(--slate-500);">Contact Details:</span>
+              <span style="font-weight: 600; color: var(--primary);">{{ item.contact_info }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Item Information & Actions -->
+    <div>
+      <div class="item-info-card">
+        <!-- Badges header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          {% if item.item_type == 'lost' %}
+            <span class="badge badge-lost" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+              <i class="fa-solid fa-triangle-exclamation"></i> Lost Item
+            </span>
+          {% else %}
+            <span class="badge badge-found" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+              <i class="fa-solid fa-hand-holding-heart"></i> Found Item
+            </span>
+          {% endif %}
+
+          <span class="badge {{ item.status|status_badge }}" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+            {{ item.status }}
+          </span>
+        </div>
+
+        <h1 style="font-size: 2rem; margin-bottom: 0.5rem; line-height: 1.25;">{{ item.title }}</h1>
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.5rem;">
+          {{ item.category }}
+        </div>
+
+        <!-- Specifications Grid -->
+        <div class="detail-spec-grid">
+          <div class="spec-item">
+            <span class="spec-label">
+              {% if item.item_type == 'lost' %}Last Seen Location{% else %}Found Location{% endif %}
+            </span>
+            <span class="spec-value">
+              <i class="fa-solid fa-location-dot" style="color: var(--primary); font-size: 0.85rem;"></i> {{ item.location }}
+            </span>
+          </div>
+
+          <div class="spec-item">
+            <span class="spec-label">
+              {% if item.item_type == 'lost' %}Date Lost{% else %}Date Found{% endif %}
+            </span>
+            <span class="spec-value">
+              <i class="fa-regular fa-calendar" style="color: var(--primary); font-size: 0.85rem;"></i> {{ item.event_date|format_date }}
+            </span>
+          </div>
+
+          {% if item.custody_info %}
+            <div class="spec-item" style="grid-column: span 2;">
+              <span class="spec-label">Current Custody & Holding Location</span>
+              <span class="spec-value" style="color: var(--accent-teal); font-weight: 700;">
+                <i class="fa-solid fa-vault"></i> {{ item.custody_info }}
+              </span>
+            </div>
+          {% endif %}
+
+          <div class="spec-item">
+            <span class="spec-label">Listing Date</span>
+            <span class="spec-value">{{ item.created_at|format_date }}</span>
+          </div>
+
+          <div class="spec-item">
+            <span class="spec-label">Item ID</span>
+            <span class="spec-value">#{{ item.id }}</span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div style="margin-bottom: 2rem;">
+          <h4 style="font-size: 1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.5rem;">
+            Full Description
+          </h4>
+          <p style="color: var(--slate-700); line-height: 1.65; white-space: pre-line;">{{ item.description }}</p>
+        </div>
+
+        <!-- Primary Action Buttons based on User Role -->
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.85rem;">
+          {% if item.item_type == 'found' %}
+            {% if session.get('user_id') == item.user_id %}
+              <div style="background: #f0fdfa; border: 1px solid #ccfbf1; padding: 1rem; border-radius: var(--radius-md); font-size: 0.9rem; color: #0f766e;">
+                <i class="fa-solid fa-info-circle"></i> You posted this found item report. When a student files a claim, the campus security desk or admin will coordinate with you.
+              </div>
+            {% elif has_claimed %}
+              <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 1rem; border-radius: var(--radius-md); font-size: 0.9rem; color: #92400e;">
+                <i class="fa-solid fa-clock"></i> <strong>Claim Pending Review:</strong> You have submitted an ownership claim for this item. Check your dashboard for verification updates!
+              </div>
+            {% elif item.status in ('Returned', 'Closed') %}
+              <div style="background: #f1f5f9; border: 1px solid #e2e8f0; padding: 1rem; border-radius: var(--radius-md); font-size: 0.9rem; color: #475569;">
+                <i class="fa-solid fa-circle-check"></i> This item has already been marked as <strong>{{ item.status }}</strong>.
+              </div>
+            {% else %}
+              <a href="{{ url_for('claims.submit_claim', item_id=item.id) }}" class="btn btn-primary btn-lg" style="width: 100%;">
+                <i class="fa-solid fa-handshake"></i> This is Mine - Claim Item
+              </a>
+            {% endif %}
+          {% else %}
+            <!-- Lost Item -->
+            {% if is_owner and item.status == 'Lost' %}
+              <form action="{{ url_for('items.update_status', item_id=item.id) }}" method="POST" onsubmit="return confirm('Have you recovered this item? Mark as Returned?');">
+                <input type="hidden" name="status" value="Returned">
+                <button type="submit" class="btn btn-success btn-lg" style="width: 100%;">
+                  <i class="fa-solid fa-circle-check"></i> I Found / Recovered My Item!
+                </button>
+              </form>
+            {% endif %}
+          {% endif %}
+
+          <!-- Owner / Admin Controls -->
+          {% if is_owner or is_admin %}
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+              <!-- Quick status update dropdown -->
+              <form action="{{ url_for('items.update_status', item_id=item.id) }}" method="POST" style="flex: 1; display: flex; gap: 0.5rem;">
+                <select name="status" class="form-control" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">
+                  <option value="" disabled selected>Update Status...</option>
+                  <option value="Lost">Set to Lost</option>
+                  <option value="Found">Set to Found</option>
+                  <option value="Claim Pending">Set to Claim Pending</option>
+                  <option value="Returned">Set to Returned</option>
+                  <option value="Closed">Set to Closed</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+              </form>
+
+              <!-- Delete item -->
+              <form action="{{ url_for('items.delete', item_id=item.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this listing?');">
+                <button type="submit" class="btn btn-danger btn-sm" title="Delete listing">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Claims Section (Visible to Item Owner and Admin) -->
+  {% if is_owner or is_admin %}
+    <div style="margin-top: 3.5rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Submitted Ownership Claims</h3>
+          <p style="color: var(--slate-600); font-size: 0.9rem;">Review submitted student verification proofs for this item.</p>
+        </div>
+        <span class="badge badge-info">{{ claims|length }} Claim(s) Filed</span>
+      </div>
+
+      {% if claims %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Claimer</th>
+                <th>Student ID</th>
+                <th>Department</th>
+                <th>Phone</th>
+                <th>Ownership Proof Details</th>
+                <th>Status</th>
+                {% if is_admin %}<th>Admin Actions</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for claim in claims %}
+                <tr>
+                  <td><strong>{{ claim.claimer_name }}</strong></td>
+                  <td>{{ claim.claimer_student_id }}</td>
+                  <td>{{ claim.claimer_dept }}</td>
+                  <td>{{ claim.contact_phone or 'N/A' }}</td>
+                  <td style="max-width: 280px; font-size: 0.85rem;">{{ claim.proof_description }}</td>
+                  <td>
+                    {% if claim.status == 'Pending' %}
+                      <span class="badge badge-warning">Pending Review</span>
+                    {% elif claim.status == 'Approved' %}
+                      <span class="badge badge-success">Approved</span>
+                    {% else %}
+                      <span class="badge badge-danger">Rejected</span>
+                    {% endif %}
+                  </td>
+                  {% if is_admin %}
+                    <td>
+                      {% if claim.status == 'Pending' %}
+                        <div style="display: flex; gap: 0.4rem;">
+                          <form action="{{ url_for('admin.claim_action', claim_id=claim.id) }}" method="POST">
+                            <input type="hidden" name="action" value="approve">
+                            <input type="hidden" name="admin_remarks" value="Claim approved after security verification.">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                          </form>
+                          <form action="{{ url_for('admin.claim_action', claim_id=claim.id) }}" method="POST">
+                            <input type="hidden" name="action" value="reject">
+                            <input type="hidden" name="admin_remarks" value="Proof provided did not match item characteristics.">
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                          </form>
+                        </div>
+                      {% else %}
+                        <span style="font-size: 0.8rem; color: var(--slate-500);">Resolved</span>
+                      {% endif %}
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="background: var(--white); border-radius: var(--radius-lg); border: 1px dashed var(--slate-300); padding: 2rem; text-align: center; color: var(--slate-500); font-size: 0.95rem;">
+          No claims have been submitted for this item yet.
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

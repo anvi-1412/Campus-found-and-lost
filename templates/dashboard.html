@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<!-- Dashboard Welcome Banner -->
+<div class="dashboard-header">
+  <div class="container">
+    <div class="dashboard-welcome">
+      <div class="welcome-info">
+        <h1>Welcome, {{ user.name }}!</h1>
+        <div class="welcome-badges">
+          <span class="welcome-badge">
+            <i class="fa-solid fa-id-badge"></i> {{ user.student_id }}
+          </span>
+          <span class="welcome-badge">
+            <i class="fa-solid fa-building-columns"></i> {{ user.department }}
+          </span>
+          <span class="welcome-badge" style="background: rgba(16, 185, 129, 0.25); color: #ecfdf5;">
+            <i class="fa-solid fa-circle-check"></i> Verified Student
+          </span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="{{ url_for('items.report_lost') }}" class="btn btn-danger">
+          <i class="fa-solid fa-plus"></i> Report Lost Item
+        </a>
+        <a href="{{ url_for('items.report_found') }}" class="btn btn-teal">
+          <i class="fa-solid fa-hand-holding-heart"></i> Report Found Item
+        </a>
+        <a href="{{ url_for('items.browse') }}" class="btn btn-secondary">
+          <i class="fa-solid fa-compass"></i> Browse Campus
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Metrics Strip -->
+  <div class="stats-grid" style="margin-bottom: 2.5rem;">
+    <div class="stat-card">
+      <div class="stat-icon warning">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="stat-value">{{ stats.my_lost }}</div>
+      <div class="stat-label">My Lost Reports</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon teal">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+      </div>
+      <div class="stat-value">{{ stats.my_found }}</div>
+      <div class="stat-label">My Found Reports</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon primary">
+        <i class="fa-solid fa-file-signature"></i>
+      </div>
+      <div class="stat-value">{{ stats.my_claims }}</div>
+      <div class="stat-label">My Total Claims</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <i class="fa-solid fa-award"></i>
+      </div>
+      <div class="stat-value">{{ stats.my_approved_claims }}</div>
+      <div class="stat-label">Approved & Recovered</div>
+    </div>
+  </div>
+
+  <!-- Tabbed Content Section -->
+  <div class="tabs-container">
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-lost">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        My Lost Items ({{ lost_items|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-found">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+        My Found Reports ({{ found_items|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-claims">
+        <i class="fa-solid fa-file-lines"></i>
+        My Claims ({{ claims|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-recent">
+        <i class="fa-solid fa-fire"></i>
+        Campus Recent Updates
+      </button>
+    </div>
+
+    <!-- Tab 1: My Lost Items -->
+    <div id="tab-lost" class="tab-pane active">
+      {% if lost_items %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item Details</th>
+                <th>Category</th>
+                <th>Last Seen Location</th>
+                <th>Date Lost</th>
+                <th>Current Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in lost_items %}
+                <tr>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                      <div style="width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: #e2e8f0; flex-shrink: 0;">
+                        {% if item.image_path %}
+                          <img src="{{ url_for('uploaded_file', filename=item.image_path) }}" alt="{{ item.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                          <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ item.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% endif %}
+                      </div>
+                      <div>
+                        <div style="font-weight: 700; color: var(--slate-900);">{{ item.title }}</div>
+                        <div style="font-size: 0.78rem; color: var(--slate-500);">Reported on {{ item.created_at|format_date }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ item.category }}</td>
+                  <td><i class="fa-solid fa-location-dot" style="color: #64748b;"></i> {{ item.location }}</td>
+                  <td>{{ item.event_date|format_date }}</td>
+                  <td>
+                    <span class="badge {{ item.status|status_badge }}">{{ item.status }}</span>
+                  </td>
+                  <td>
+                    <div class="action-btns">
+                      <a href="{{ url_for('items.details', item_id=item.id) }}" class="btn btn-secondary btn-sm" title="View details">
+                        <i class="fa-solid fa-eye"></i>
+                      </a>
+                      {% if item.status == 'Lost' %}
+                        <form action="{{ url_for('items.update_status', item_id=item.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Did you recover this item? Mark as Returned?');">
+                          <input type="hidden" name="status" value="Returned">
+                          <button type="submit" class="btn btn-success btn-sm" title="Mark as Recovered">
+                            <i class="fa-solid fa-check"></i> Found It
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3.5rem 1.5rem; background: #ffffff; border-radius: var(--radius-xl); border: 1px dashed var(--slate-300);">
+          <div style="font-size: 2.5rem; color: var(--slate-400); margin-bottom: 0.75rem;">
+            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+          </div>
+          <h3 style="margin-bottom: 0.35rem;">No Lost Items Reported</h3>
+          <p style="color: var(--slate-600); margin-bottom: 1.5rem; max-width: 420px; margin-left: auto; margin-right: auto;">
+            Great news! You have not reported any missing belongings. If you ever misplace an item, click below to notify the campus.
+          </p>
+          <a href="{{ url_for('items.report_lost') }}" class="btn btn-danger">
+            <i class="fa-solid fa-plus"></i> Report a Lost Item
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Tab 2: My Found Reports -->
+    <div id="tab-found" class="tab-pane">
+      {% if found_items %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item Details</th>
+                <th>Category</th>
+                <th>Found Location</th>
+                <th>Current Custody</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in found_items %}
+                <tr>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                      <div style="width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: #e2e8f0; flex-shrink: 0;">
+                        {% if item.image_path %}
+                          <img src="{{ url_for('uploaded_file', filename=item.image_path) }}" alt="{{ item.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                          <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ item.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% endif %}
+                      </div>
+                      <div>
+                        <div style="font-weight: 700; color: var(--slate-900);">{{ item.title }}</div>
+                        <div style="font-size: 0.78rem; color: var(--slate-500);">Found on {{ item.event_date|format_date }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ item.category }}</td>
+                  <td><i class="fa-solid fa-location-dot" style="color: #64748b;"></i> {{ item.location }}</td>
+                  <td><i class="fa-solid fa-vault" style="color: #64748b;"></i> {{ item.custody_info or 'With finder' }}</td>
+                  <td>
+                    <span class="badge {{ item.status|status_badge }}">{{ item.status }}</span>
+                  </td>
+                  <td>
+                    <a href="{{ url_for('items.details', item_id=item.id) }}" class="btn btn-secondary btn-sm">
+                      <i class="fa-solid fa-eye"></i> View Listing
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3.5rem 1.5rem; background: #ffffff; border-radius: var(--radius-xl); border: 1px dashed var(--slate-300);">
+          <div style="font-size: 2.5rem; color: var(--slate-400); margin-bottom: 0.75rem;">
+            <i class="fa-solid fa-hand-holding-heart" style="color: #0d9488;"></i>
+          </div>
+          <h3 style="margin-bottom: 0.35rem;">No Found Items Reported Yet</h3>
+          <p style="color: var(--slate-600); margin-bottom: 1.5rem; max-width: 420px; margin-left: auto; margin-right: auto;">
+            Found an umbrella, textbook, or key ring in a campus lecture hall? Help a fellow student recover it today!
+          </p>
+          <a href="{{ url_for('items.report_found') }}" class="btn btn-teal">
+            <i class="fa-solid fa-plus"></i> Report a Found Item
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Tab 3: My Claims -->
+    <div id="tab-claims" class="tab-pane">
+      {% if claims %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Target Item</th>
+                <th>Claim Date</th>
+                <th>My Submitted Proof</th>
+                <th>Status</th>
+                <th>Admin / Custodian Remarks</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for claim in claims %}
+                <tr>
+                  <td>
+                    <div style="font-weight: 700; color: var(--slate-900);">{{ claim.item_title }}</div>
+                    <div style="font-size: 0.78rem; color: var(--slate-500);"><i class="fa-solid fa-location-dot"></i> {{ claim.item_location }}</div>
+                  </td>
+                  <td>{{ claim.created_at|format_date }}</td>
+                  <td style="max-width: 280px;">
+                    <div style="font-size: 0.85rem; color: var(--slate-700); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                      {{ claim.proof_description }}
+                    </div>
+                  </td>
+                  <td>
+                    {% if claim.status == 'Pending' %}
+                      <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Under Review</span>
+                    {% elif claim.status == 'Approved' %}
+                      <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Approved - Claim Verified</span>
+                    {% else %}
+                      <span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>
+                    {% endif %}
+                  </td>
+                  <td style="max-width: 240px; font-size: 0.85rem; color: var(--slate-600);">
+                    {{ claim.admin_remarks or 'Verification pending by Security Desk.' }}
+                  </td>
+                  <td>
+                    <a href="{{ url_for('items.details', item_id=claim.item_id) }}" class="btn btn-secondary btn-sm">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i> View Item
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3.5rem 1.5rem; background: #ffffff; border-radius: var(--radius-xl); border: 1px dashed var(--slate-300);">
+          <div style="font-size: 2.5rem; color: var(--slate-400); margin-bottom: 0.75rem;">
+            <i class="fa-solid fa-file-circle-question"></i>
+          </div>
+          <h3 style="margin-bottom: 0.35rem;">No Active Claims Filed</h3>
+          <p style="color: var(--slate-600); margin-bottom: 1.5rem; max-width: 420px; margin-left: auto; margin-right: auto;">
+            Browse reported found items. If you see something that belongs to you, submit a verification claim to reclaim it.
+          </p>
+          <a href="{{ url_for('items.browse', type='found') }}" class="btn btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i> Browse Found Items
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Tab 4: Campus Recent Updates -->
+    <div id="tab-recent" class="tab-pane">
+      <div class="items-grid">
+        {% for item in recent_items %}
+          <div class="item-card">
+            <div class="item-card-image-wrap">
+              {% if item.image_path %}
+                <img src="{{ url_for('uploaded_file', filename=item.image_path) }}" alt="{{ item.title }}" class="item-card-image">
+              {% else %}
+                <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ item.title }}" class="item-card-image">
+              {% endif %}
+
+              <div class="item-card-badges">
+                {% if item.item_type == 'lost' %}
+                  <span class="badge badge-lost">Lost</span>
+                {% else %}
+                  <span class="badge badge-found">Found</span>
+                {% endif %}
+                <span class="badge {{ item.status|status_badge }}">{{ item.status }}</span>
+              </div>
+            </div>
+
+            <div class="item-card-body">
+              <div class="item-card-category">{{ item.category }}</div>
+              <h3 class="item-card-title">{{ item.title }}</h3>
+              <p class="item-card-desc">{{ item.description }}</p>
+
+              <div class="item-card-meta">
+                <div class="meta-row">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span>{{ item.location }}</span>
+                </div>
+                <div class="meta-row">
+                  <i class="fa-regular fa-calendar"></i>
+                  <span>{{ item.event_date|format_date }}</span>
+                </div>
+              </div>
+
+              <div class="item-card-footer">
+                <a href="{{ url_for('items.details', item_id=item.id) }}" class="btn btn-secondary btn-sm" style="width: 100%;">
+                  <i class="fa-solid fa-eye"></i> View Full Details
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

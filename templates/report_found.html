@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Report a Found Item{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding-top: 3rem; padding-bottom: 3.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('user.dashboard') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: var(--slate-600); margin-bottom: 0.75rem;">
+      <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #f0fdfa; color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+      </div>
+      <div>
+        <h1 style="font-size: 2rem; margin-bottom: 0.2rem;">Report a Found Item</h1>
+        <p style="color: var(--slate-600); font-size: 0.95rem;">Thank you for your honesty! Help reunite a fellow student with their misplaced belonging.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('items.report_found') }}" enctype="multipart/form-data">
+      <!-- Item Name -->
+      <div class="form-group">
+        <label for="title" class="form-label">
+          Item Name / Title <span class="required">*</span>
+        </label>
+        <input type="text" id="title" name="title" class="form-control" 
+               value="{{ form_data.title or '' }}" 
+               placeholder="e.g. Sony WH-1000XM5 Silver Headphones, Casio Scientific Calculator" required autofocus>
+      </div>
+
+      <!-- Category & Date Found -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category" class="form-label">
+            Item Category <span class="required">*</span>
+          </label>
+          <select id="category" name="category" class="form-control" required>
+            <option value="" disabled {% if not form_data.category %}selected{% endif %}>Select category...</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if form_data.category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="event_date" class="form-label">
+            Date Found <span class="required">*</span>
+          </label>
+          <input type="date" id="event_date" name="event_date" class="form-control" 
+                 max="{{ today }}" value="{{ form_data.event_date or today }}" required>
+        </div>
+      </div>
+
+      <!-- Found Location -->
+      <div class="form-group">
+        <label for="location" class="form-label">
+          Location Where Found <span class="required">*</span>
+        </label>
+        <select id="location" name="location" class="form-control" required>
+          <option value="" disabled {% if not form_data.location %}selected{% endif %}>Select campus location...</option>
+          {% for loc in locations %}
+            <option value="{{ loc }}" {% if form_data.location == loc %}selected{% endif %}>{{ loc }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-hint">Specify the building, bench, or room where you picked up the item.</div>
+      </div>
+
+      <!-- Current Custody / Where it was handed in -->
+      <div class="form-group">
+        <label for="custody_info" class="form-label">
+          Current Custody & Safe Holding Location <span class="required">*</span>
+        </label>
+        <input type="text" id="custody_info" name="custody_info" class="form-control" 
+               value="{{ form_data.custody_info or '' }}" 
+               placeholder="e.g. Handed over to Campus Security Desk (Rm 105), Left with Library Front Desk, Kept with finder" required>
+        <div class="form-hint">Crucial! Students need to know where to visit to collect their verified item.</div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description" class="form-label">
+          General Description <span class="required">*</span>
+        </label>
+        <textarea id="description" name="description" class="form-control" rows="4" 
+                  placeholder="Describe the item's condition, color, and general appearance. (Tip: Keep some private details secret so the real owner can verify their claim!)" required minlength="10">{{ form_data.description or '' }}</textarea>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="form-group">
+        <label for="contact_info" class="form-label">
+          Finder Contact Info (Optional)
+        </label>
+        <input type="text" id="contact_info" name="contact_info" class="form-control" 
+               value="{{ form_data.contact_info or session.get('user_email') }}" 
+               placeholder="e.g. your campus email or phone number">
+      </div>
+
+      <!-- Item Photo Upload (Drag & Drop Zone with Live Preview) -->
+      <div class="form-group">
+        <label class="form-label">Item Photo</label>
+        <div class="file-upload-zone">
+          <input type="file" name="image" accept="image/png, image/jpeg, image/webp, image/gif" class="file-upload-input">
+          <div class="file-upload-icon" style="color: var(--accent-teal);">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <div style="font-weight: 600; color: var(--slate-800); margin-bottom: 0.25rem;">
+            Click to upload or drag and drop a photo
+          </div>
+          <div style="font-size: 0.8rem; color: var(--slate-500);">
+            Supports PNG, JPG, JPEG, WEBP (Max 8MB)
+          </div>
+        </div>
+
+        <div class="file-preview-container">
+          <img src="" alt="Selected Image Preview" class="file-preview-img">
+          <button type="button" class="file-preview-remove" title="Remove image">&times;</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center; margin-top: 2rem;">
+        <button type="submit" class="btn btn-teal btn-lg" style="flex: 1;">
+          <i class="fa-solid fa-hand-holding-heart"></i> Submit Found Report
+        </button>
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-lg">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
